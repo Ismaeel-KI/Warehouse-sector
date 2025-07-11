@@ -5,27 +5,13 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart"
-import { Line, LineChart, XAxis, YAxis, CartesianGrid, Bar, BarChart, ComposedChart } from "recharts"
+import { Line, LineChart, XAxis, YAxis, CartesianGrid, Bar, BarChart, ComposedChart} from "recharts"
 import { Fragment } from "react"
 import { TrendingUp } from "lucide-react"
 import React from "react";
 import { Package } from "lucide-react"
 import { isThisMonth, isThisWeek, isToday, parseISO } from "date-fns"
-
-const storageData = [
-  { zone: "A1", utilization: 85, status: "high" },
-  { zone: "A2", utilization: 92, status: "high" },
-  { zone: "A3", utilization: 78, status: "medium" },
-  { zone: "A4", utilization: 45, status: "low" },
-  { zone: "B1", utilization: 88, status: "high" },
-  { zone: "B2", utilization: 67, status: "medium" },
-  { zone: "B3", utilization: 34, status: "low" },
-  { zone: "B4", utilization: 91, status: "high" },
-  { zone: "C1", utilization: 72, status: "medium" },
-  { zone: "C2", utilization: 89, status: "high" },
-  { zone: "C3", utilization: 56, status: "medium" },
-  { zone: "C4", utilization: 28, status: "low" },
-]
+import { Scatter } from "recharts"
 
 const pickingData = [
   { day: "Mon", avgTime: 12.5, outliers: [{ time: 25, orderId: "ORD-001" }] },
@@ -44,13 +30,13 @@ const accuracyData = [
 ]
 
 const downtimeData = [
-  { day: "Mon", downtime: 2.5, delayedOrders: 8, equipment: "Forklift" },
-  { day: "Tue", downtime: 1.2, delayedOrders: 3, equipment: "Conveyor" },
-  { day: "Wed", downtime: 3.8, delayedOrders: 12, equipment: "Forklift" },
-  { day: "Thu", downtime: 0.5, delayedOrders: 1, equipment: "Scanner" },
-  { day: "Fri", downtime: 4.2, delayedOrders: 15, equipment: "Conveyor" },
-  { day: "Sat", downtime: 2.1, delayedOrders: 6, equipment: "Forklift" },
-  { day: "Sun", downtime: 1.8, delayedOrders: 4, equipment: "Scanner" },
+  { day: "Mon", downtime: 4.5, delayedOrders: 2, equipment: "Forklift" },
+  { day: "Tue", downtime: 7.2, delayedOrders: 4, equipment: "Conveyor" },
+  { day: "Wed", downtime: 6.8, delayedOrders: 5, equipment: "Forklift" },
+  { day: "Thu", downtime: 5.5, delayedOrders: 1, equipment: "Scanner" },
+  { day: "Fri", downtime: 6.2, delayedOrders: 6, equipment: "Conveyor" },
+  { day: "Sat", downtime: 5.1, delayedOrders: 3.3, equipment: "Forklift" },
+  { day: "Sun", downtime: 3.8, delayedOrders: 1 , equipment: "Scanner" },
 ]
 
 const verticalAisles = [3, 6, 9, 12, 15, 18];      // Columns for vertical aisles
@@ -59,14 +45,17 @@ const horizontalAisles = [2];         // Rows for horizontal aisles
 const warehouseLayout = [
   [85, 92, 78, 0, 88, 95, 0, 82, 77, 0, 69, 73, 76, 74, 71],
   [90, 87, 83, 0, 91, 89, 0, 85, 81, 0, 66, 68, 72, 70, 67],
-  [88, 94, 86, 0, 84, 92, 0, 87, 75, 0, 65, 70, 73, 71, 69],
+  [88, 94, 86, 0, 84, 92, 0, 87, 75, 40, 65, 70, 73, 71, 69],
   [71, 73, 72, 0, 76, 74, 0, 78, 80, 0, 69, 60, 63, 61, 59],
-  [62, 58, 66, 0, 64, 67, 0, 68, 70, 0, 72, 74, 75, 77, 78], // aisle after this
+  [62, 58, 66, 40, 64, 67, 0, 68, 70, 0, 72, 74, 75, 77, 78], // aisle after this
   [58, 64, 60, 0, 59, 63, 0, 62, 65, 0, 70, 68, 66, 67, 69], // aisle after this
-  [72, 74, 70, 0, 75, 77, 0, 78, 76, 0, 69, 71, 73, 74, 72],
+  [72, 74, 70, 0, 75, 77, 0, 78, 76, 20, 69, 71, 73, 74, 72],
   [55, 52, 57, 0, 54, 59, 0, 56, 53, 0, 51, 49, 48, 47, 46],
   [44, 42, 41, 0, 45, 43, 0, 40, 39, 0, 38, 37, 36, 35, 3],
-  [66, 64, 68, 0, 67, 69, 0, 65, 63, 0, 62, 60, 59, 61, 58],
+  [66, 64, 68, 20, 67, 69, 0, 65, 63, 0, 62, 60, 59, 61, 58],
+  [48, 50, 46, 0, 52, 49, 0, 51, 47, 0, 53, 54, 55, 56, 57],
+  [61, 59, 60, 0, 58, 62, 0, 63, 65, 40, 64, 66, 68, 67, 69],
+  [75, 73, 74, 40, 76, 78, 0, 77, 79, 20, 80, 82, 83, 81, 84],
 ];
 
 const rawOrderData = [
@@ -211,6 +200,19 @@ const rawOrderData = [
   },
 ]
 
+const originalOutliers = [
+  { id: "ORD-001", day: "Mon", time: 25 },
+  { id: "ORD-045", day: "Wed", time: 28 },
+  { id: "ORD-089", day: "Fri", time: 31 },
+]
+
+const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+
+const outliers = days.map((day) => {
+  const match = originalOutliers.find((o) => o.day === day)
+  return match ? match : { day, time: null, id: null }
+})
+
 const equipmentDowntime = [
   { type: "Forklifts", frequency: 15 },
   { type: "Conveyors", frequency: 8 },
@@ -225,6 +227,33 @@ function getUtilColor(util: number) {
   if (util >= 40) return "bg-yellow-400"
   return "bg-red-500"
 }
+
+const equipmentTotals = downtimeData.reduce((acc, entry) => {
+  if (!acc[entry.equipment]) {
+    acc[entry.equipment] = { downtime: 0, delayedOrders: 0 };
+  }
+  acc[entry.equipment].downtime += entry.downtime;
+  acc[entry.equipment].delayedOrders += entry.delayedOrders;
+  return acc;
+}, {} as Record<string, { downtime: number; delayedOrders: number }>);
+
+// Calculate overall average downtime per delayed order
+const totalDowntime = downtimeData.reduce((sum, entry) => sum + entry.downtime, 0);
+const totalDelayedOrders = downtimeData.reduce((sum, entry) => sum + entry.delayedOrders, 0);
+const avgDowntimePerOrder = totalDelayedOrders ? (totalDowntime / totalDelayedOrders).toFixed(2) : "0.00";
+
+const allUtilValues = warehouseLayout.flat();
+const totalSlotsAvailable = allUtilValues.length;
+const activeSlots = allUtilValues.filter((util) => util > 0);
+const totalSlots = activeSlots.length;
+const highUtil = activeSlots.filter((util) => util > 80).length;
+const lowUtil = activeSlots.filter((util) => util < 40).length;
+const avgUtil = activeSlots.reduce((sum, util) => sum + util, 0) / totalSlots || 0;
+
+const avgPickTime = pickingData.reduce((sum, d) => sum + d.avgTime, 0) / pickingData.length
+const totalOutliers = pickingData.reduce((count, d) => count + d.outliers.length, 0)
+const slowestDay = pickingData.reduce((max, d) => d.avgTime > max.avgTime ? d : max, pickingData[0])
+const worstOutlier = pickingData.flatMap(d => d.outliers).reduce((max, o) => o.time > max.time ? o : max, { time: 0, orderId: "" })
 
 type FilterPeriod = "day" | "week" | "month"
 
@@ -321,6 +350,14 @@ export function OperationalEfficiencyTab() {
     )
   }, [filteredData])
 
+  const storageStats = {
+  totalSlotsAvailable,
+  totalSlots,
+  highUtil,
+  lowUtil,
+  avgUtil,
+};
+
   const summaryStats = useMemo(() => {
     const totalOrders = aggregatedData.reduce((sum, shift) => sum + shift.teamA + shift.teamB + shift.teamC, 0)
     const totalErrors = aggregatedData.reduce(
@@ -330,7 +367,7 @@ export function OperationalEfficiencyTab() {
     const accuracy = totalOrders > 0 ? ((totalOrders - totalErrors) / totalOrders) * 100 : 0
 
     return { totalOrders, totalErrors, accuracy }
-  }, [aggregatedData])
+  }, [aggregatedData])  
 
 
   return (
@@ -363,35 +400,38 @@ export function OperationalEfficiencyTab() {
                   gridTemplateColumns: `repeat(${row.length + Math.floor(row.length / 2)}, minmax(0, 1fr))`,
                 }}
               >
-                {row.map((util, colIndex) => (
-                  <Fragment key={colIndex}>
-                    {/* Insert vertical aisle after every 2 columns */}
-                    {colIndex % 3 === 0 && colIndex !== 0 && <div className="w-2" />}
-                    <div
-                      className={`relative w-5 h-5 rounded transition-all duration-150 ease-in-out
-                        hover:scale-110
-                        hover:bg-white hover:text-black
-                        dark:hover:bg-white dark:hover:text-black
-                        hover:ring-2 hover:ring-white
-                        ${getUtilColor(util)}`}
-                      title={util > 0 ? `Utilization: ${util}%` : "Empty"}
-                    >
-                      <span
-                        className="absolute inset-0 flex items-center justify-center text-[10px] font-medium opacity-0 scale-75 transition-all duration-200
-                          hover:opacity-100 hover:scale-100"
+                {row.map((util, colIndex) => {
+                  const isAisle =
+                    colIndex === 1 || (colIndex > 1 && (colIndex - 1) % 2 === 0 && colIndex !== row.length - 1);
+                  return (
+                    <Fragment key={colIndex}>
+                      {isAisle && <div className="w-2" />}
+                      <div
+                        className={`relative w-5 h-5 rounded transition-all duration-150 ease-in-out
+                          hover:scale-110
+                          hover:bg-white hover:text-black
+                          dark:hover:bg-white dark:hover:text-black
+                          hover:ring-2 hover:ring-white
+                          ${getUtilColor(util)}`}
+                        title={util > 0 ? `Utilization: ${util}%` : "Empty"}
                       >
-                        {util > 0 ? `${util}%` : ""}
-                      </span>
-                    </div>
-                  </Fragment>
-                ))}
+                        <span
+                          className="absolute inset-0 flex items-center justify-center text-[10px] font-medium opacity-0 scale-75 transition-all duration-200
+                            hover:opacity-100 hover:scale-100"
+                        >
+                          {util > 0 ? `${util}%` : ""}
+                        </span>
+                      </div>
+                    </Fragment>
+                  );
+                })}
               </div>
             </Fragment>
           ))}
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap justify-center gap-4 text-xs text-white/80">
+          <div className="flex flex-wrap py-3 justify-center gap-4 text-xs text-white/80">
             <div className="flex items-center gap-1">
               <div className="w-3 h-3 rounded bg-green-500"></div>
               <span className="dark:text-white text-black">{"100-80% (Green)"}</span>
@@ -409,6 +449,31 @@ export function OperationalEfficiencyTab() {
               <span className="dark:text-white text-black">{"<40% (Red)"}</span>
             </div>
           </div>
+        
+          <div className="border-t pt-4">
+            <div className="grid grid-cols-4 gap-4 mt-6">
+              <div className="text-center bg-gray-100 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+                <div className="text-2xl font-bold text-gray-800 dark:text-white">{storageStats.totalSlotsAvailable}</div>
+                <div className="text-xs text-gray-600 mt-1">Total Slots Available</div>
+              </div>
+
+              <div className="text-center bg-blue-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+                <div className="text-2xl font-bold text-blue-600">{storageStats.totalSlots}</div>
+                <div className="text-xs text-gray-600 mt-1">Active Slots</div>
+              </div>
+
+              <div className="text-center bg-red-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+                <div className="text-2xl font-bold text-red-600">{storageStats.lowUtil}</div>
+                <div className="text-xs text-gray-600 mt-1">Underutilized (&lt; 40%)</div>
+              </div>
+
+              <div className="text-center bg-green-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+                <div className="text-2xl font-bold text-green-600">{storageStats.avgUtil.toFixed(1)}%</div>
+                <div className="text-xs text-gray-600 mt-1">Avg Utilization</div>
+              </div>
+            </div>
+          </div>
+
         </CardContent>
       </Card>
 
@@ -417,7 +482,7 @@ export function OperationalEfficiencyTab() {
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle>Picking Path Efficiency</CardTitle>
+              <CardTitle>Picking Path Efficiency (Avg Time per Order)</CardTitle>
               <CardDescription>Average pick time with outlier detection</CardDescription>
             </div>
             <div className="flex gap-2">
@@ -441,21 +506,56 @@ export function OperationalEfficiencyTab() {
                 color: "hsl(var(--chart-1))",
               },
             }}
-            className="h-[200px]"
           >
-            <LineChart data={pickingData}>
+            <ComposedChart data={pickingData}>
               <CartesianGrid strokeDasharray="3 3" />
-              <XAxis dataKey="day" />
-              <YAxis />
+              <XAxis
+                dataKey="day"
+                tick={{ fontSize: 12 }}
+                interval={0}
+                ticks={["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]}
+              />
+              <YAxis label={{ value: "Time (min)", angle: -90, position: 'insideLeft' }} />
               <ChartTooltip content={<ChartTooltipContent />} />
               <Line type="monotone" dataKey="avgTime" stroke="var(--color-avgTime)" strokeWidth={2} />
-            </LineChart>
+              <Scatter
+                name="Outliers"
+                data={outliers}
+                dataKey="time"
+                fill="hsl(var(--destructive))"
+                shape="circle"
+              />
+            </ComposedChart>
           </ChartContainer>
           <div className="flex flex-wrap gap-2 mt-4">
-            <Badge variant="destructive">ORD-001: 25min</Badge>
-            <Badge variant="destructive">ORD-045: 28min</Badge>
-            <Badge variant="destructive">ORD-089: 31min</Badge>
+            {outliers
+              .filter(order => order.time !== null)
+              .map(order => (
+                <Badge variant="destructive" key={order.id}>
+                  {order.id}: {order.time}min
+                </Badge>
+            ))}
           </div>
+
+          <div className="border-t pt-4 mt-4 grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="text-center bg-gray-100 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+            <div className="text-2xl font-bold text-gray-800 dark:text-white">{avgPickTime.toFixed(1)} min</div>
+            <div className="text-xs text-gray-600 mt-1">Avg Pick Time</div>
+          </div>
+          <div className="text-center bg-yellow-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+            <div className="text-2xl font-bold text-yellow-600">{slowestDay.day}</div>
+            <div className="text-xs text-gray-600 mt-1">Slowest Day</div>
+          </div>
+          <div className="text-center bg-red-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+            <div className="text-2xl font-bold text-red-600">{totalOutliers}</div>
+            <div className="text-xs text-gray-600 mt-1">Total Outliers</div>
+          </div>
+          <div className="text-center bg-blue-50 dark:bg-zinc-800 p-3 rounded-lg hover:scale-105 transition-transform">
+            <div className="text-xl font-bold text-blue-600">{worstOutlier.orderId || "-"}</div>
+            <div className="text-xs text-gray-600 mt-1">Worst Outlier</div>
+            <div className="text-xs text-gray-500">{worstOutlier.time} min</div>
+          </div>
+        </div>
         </CardContent>
       </Card>
 
@@ -474,7 +574,7 @@ export function OperationalEfficiencyTab() {
               teamB: { label: "Team B", color: "hsl(var(--chart-2))" },
               teamC: { label: "Team C", color: "hsl(var(--chart-3))" },
             }}
-            className="h-[200px]"
+
           >
             <BarChart data={accuracyData} barCategoryGap={12}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -547,13 +647,13 @@ export function OperationalEfficiencyTab() {
           </div>
           <div className="border-t pt-4">
             <div className="grid grid-cols-3 gap-4">
-              <div className="text-center p-3 bg-blue-50 rounded-lg hover:scale-105 transition-transform">
+              <div className="text-center dark:bg-zinc-800 p-3 bg-blue-50 rounded-lg hover:scale-105 transition-transform">
                 <div className="text-2xl font-bold text-blue-600">{summaryStats.totalOrders}</div>
                 <div className="text-xs text-gray-600 mt-1">Total Orders</div>
                 <div className="text-xs text-muted-foreground mt-1">{getFilterLabel(filterPeriod)}</div>
               </div>
 
-              <div className="text-center p-3 bg-red-50 rounded-lg hover:scale-105 transition-transform">
+              <div className="text-center dark:bg-zinc-800 p-3 bg-red-50 rounded-lg hover:scale-105 transition-transform">
                 <div className="text-2xl font-bold text-red-600">{summaryStats.totalErrors}</div>
                 <div className="text-xs text-gray-600 mt-1">Total Errors</div>
                 <div className="text-xs text-muted-foreground mt-1">
@@ -564,7 +664,7 @@ export function OperationalEfficiencyTab() {
                 </div>
               </div>
 
-              <div className="text-center p-3 bg-green-50 rounded-lg hover:scale-105 transition-transform">
+              <div className="text-center dark:bg-zinc-800 p-3 bg-green-50 rounded-lg hover:scale-105 transition-transform">
                 <div className="text-2xl font-bold text-green-600">{summaryStats.accuracy.toFixed(1)}%</div>
                 <div className="text-xs text-gray-600 mt-1">Overall Accuracy</div>
                 <div className="flex justify-center mt-1">
@@ -581,8 +681,6 @@ export function OperationalEfficiencyTab() {
           </div>
         </CardContent>
       </Card>
-
-
 
       {/* Equipment Downtime Impact */}
       <Card>
@@ -602,7 +700,6 @@ export function OperationalEfficiencyTab() {
                 color: "hsl(var(--chart-2))",
               },
             }}
-            className="h-[200px]"
           >
             <ComposedChart data={downtimeData}>
               <CartesianGrid strokeDasharray="3 3" />
@@ -620,13 +717,28 @@ export function OperationalEfficiencyTab() {
               />
             </ComposedChart>
           </ChartContainer>
+
+          <div className="flex flex-wrap gap-2 py-1 text-sm">
+            {Object.entries(equipmentTotals).map(([equipment, data]) => (
+              <Badge key={equipment} variant="outline">
+                {equipment}: {data.downtime.toFixed(1)} hrs, {data.delayedOrders} delayed orders
+              </Badge>
+            ))}
+            
+            {/* Full-width average line */}
+            <div className="w-full mt-2 font-medium text-muted-foreground">
+              Average Downtime per Delayed Order: {avgDowntimePerOrder} hrs
+            </div>
+          </div>
+
+
           <div className="space-y-2 py-0">
-            <h4 className="text-sm font-medium text-gray-700">Equipment Downtime Frequency</h4>
+            <h4 className="text-sm font-medium pt-2 text-gray-700">Equipment Downtime Frequency</h4>
             <div className="grid grid-cols-2 gap-2 py-0">
               {equipmentDowntime.map((item, index) => (
                 <div
                   key={item.type}
-                  className="bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer hover:scale-102"
+                  className="dark:bg-zinc-800 bg-gray-50 p-3 rounded-lg hover:bg-gray-100 transition-colors cursor-pointer hover:scale-102"
                 >
                   <div className="flex items-center justify-between">
                     <span className="text-sm font-medium">{item.type}</span>
@@ -647,10 +759,10 @@ export function OperationalEfficiencyTab() {
           </div>
 
           {/* Summary Stats */}
-          <div className="border-t pt-4">
+          <div className="border-t">
             <div className="grid grid-cols-3 gap-4 mt-4">
               <div
-                className="text-center p-3 bg-blue-50 rounded-lg hover:scale-105 transition-transform"
+                className="dark:bg-zinc-800 text-center p-3 bg-blue-50 rounded-lg hover:scale-105 transition-transform"
               >
                 <div className="text-2xl font-bold text-blue-600">
                   {downtimeData.reduce((sum, day) => sum + day.downtime, 0).toFixed(1)}h
@@ -658,7 +770,7 @@ export function OperationalEfficiencyTab() {
                 <div className="text-xs text-gray-600 mt-1">Total Downtime</div>
               </div>
               <div
-                className="text-center p-3 bg-red-50 rounded-lg hover:scale-105 transition-transform"
+                className="dark:bg-zinc-800 text-center p-3 bg-red-50 rounded-lg hover:scale-105 transition-transform"
               >
                 <div className="text-2xl font-bold text-red-600">
                   {downtimeData.reduce((sum, day) => sum + day.delayedOrders, 0)}
@@ -666,7 +778,7 @@ export function OperationalEfficiencyTab() {
                 <div className="text-xs text-gray-600 mt-1">Delayed Orders</div>
               </div>
               <div
-                className="text-center p-3 bg-green-50 rounded-lg hover:scale-105 transition-transform"
+                className="dark:bg-zinc-800 text-center p-3 bg-green-50 rounded-lg hover:scale-105 transition-transform"
               >
                 <div className="text-2xl font-bold text-green-600">
                   {equipmentDowntime.reduce((sum, eq) => sum + eq.frequency, 0)}
